@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bäromat3000 - USB Control Panel</title>
+  <title>Bäromat3000 - Musik & Automat</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -24,7 +24,7 @@
       border-radius: 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       text-align: center;
-      width: 340px;
+      width: 360px;
     }
 
     .logo-img {
@@ -37,10 +37,9 @@
     }
 
     h1 {
-      margin: 0 0 15px 0;
-      font-size: 26px;
+      margin: 0 0 10px 0;
+      font-size: 24px;
       color: #ffcc00;
-      letter-spacing: 1px;
     }
 
     .status {
@@ -53,8 +52,19 @@
       border: 1px solid #33344a;
     }
 
-    .status span {
-      font-weight: bold;
+    .lyrics-box {
+      background: #15151c;
+      border-radius: 10px;
+      padding: 12px;
+      margin: 15px 0;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-style: italic;
+      color: #ffcc00;
+      font-size: 15px;
+      border: 1px dashed #444558;
     }
 
     .btn {
@@ -73,71 +83,49 @@
       transform: scale(0.98);
     }
 
-    .btn-connect {
-      background: #007acc;
-      color: #fff;
-    }
+    .btn-connect { background: #007acc; color: #fff; }
+    .btn-connect:hover { background: #005999; }
 
-    .btn-connect:hover {
-      background: #005999;
-    }
-
-    .btn-dispense {
-      background: #ffcc00;
-      color: #1a1a24;
+    .btn-dispense { 
+      background: #ffcc00; 
+      color: #1a1a24; 
       box-shadow: 0 4px 15px rgba(255, 204, 0, 0.2);
     }
+    .btn-dispense:hover { background: #e6b800; }
+    .btn-dispense:disabled { background: #444558; color: #777; cursor: not-allowed; box-shadow: none; }
 
-    .btn-dispense:hover {
-      background: #e6b800;
-    }
-
-    .btn-dispense:disabled {
-      background: #444558;
-      color: #777;
-      box-shadow: none;
-      cursor: not-allowed;
-    }
-
-    .btn-stop {
-      background: #e74c3c;
-      color: #fff;
-    }
-
-    .btn-stop:hover {
-      background: #c0392b;
-    }
-
-    .btn-stop:disabled {
-      background: #444558;
-      color: #777;
-      cursor: not-allowed;
-    }
+    .btn-stop { background: #e74c3c; color: #fff; }
+    .btn-stop:hover { background: #c0392b; }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <!-- Logo Einbindung -->
     <img src="Logo.jpg" alt="Bäromat3000 Logo" class="logo-img">
     
     <h1>Bäromat3000</h1>
     <div class="status">Status: <span id="statusText" style="color: #e74c3c;">Nicht verbunden</span></div>
 
-    <button id="connectBtn" class="btn btn-connect">Arduino verbinden</button>
-    <button id="dispenseBtn" class="btn btn-dispense" disabled> Portion Ausgeben</button>
-    <button id="stopBtn" class="btn btn-stop" disabled>⛔ Motor Stromlos</button>
+    <div class="lyrics-box" id="lyricsDisplay">Bereit für die Süßigkeiten-Hymne... 🎶</div>
+
+    <button id="connectBtn" class="btn btn-connect"> Arduino verbinden</button>
+    <button id="dispenseBtn" class="btn btn-dispense" disabled>Automat starten </button>
+    <button id="stopBtn" class="btn btn-stop" disabled>⛔ Not-Aus / Stromlos</button>
   </div>
 
   <script>
     let port;
     let writer;
+    let reader;
+    let audioCtx;
 
     const connectBtn = document.getElementById('connectBtn');
     const dispenseBtn = document.getElementById('dispenseBtn');
     const stopBtn = document.getElementById('stopBtn');
     const statusText = document.getElementById('statusText');
+    const lyricsDisplay = document.getElementById('lyricsDisplay');
 
+    // Verbindung herstellen
     connectBtn.addEventListener('click', async () => {
       if ('serial' in navigator) {
         try {
@@ -145,7 +133,7 @@
           await port.open({ baudRate: 115200 });
 
           const textEncoder = new TextEncoderStream();
-          const writableStreamClosed = textEncoder.readable.pipeTo(port.writable);
+          textEncoder.readable.pipeTo(port.writable);
           writer = textEncoder.writable.getWriter();
 
           statusText.innerText = "Bereit (USB)";
@@ -159,32 +147,85 @@
           console.error(err);
         }
       } else {
-        alert("Web Serial wird von diesem Browser nicht unterstützt. Bitte benutze Chrome oder Edge.");
+        alert("Web Serial wird von diesem Browser nicht unterstützt.");
       }
     });
 
-    dispenseBtn.addEventListener('click', async () => {
-      if (writer) {
-        statusText.innerText = "Gibt aus...";
-        statusText.style.color = "#ffcc00";
-        dispenseBtn.disabled = true;
-
-        await writer.write("1");
-
-        setTimeout(() => {
-          statusText.innerText = "Bereit";
-          statusText.style.color = "#2ecc71";
-          dispenseBtn.disabled = false;
-        }, 15000); 
+    // Melodie-Player (Web Audio API) & Songtext-Synchronisation
+    async function playSongAndDispense() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
-    });
+
+      dispenseBtn.disabled = true;
+      statusText.innerText = "Ausgabe & Song läuft...";
+      statusText.style.color = "#ffcc00";
+
+      // Signal an Arduino senden (Motor starten)
+      await writer.write("1");
+
+      // Song-Daten: [Note (Hz), Dauer in ms, "Anzuzeigender Text"]
+      // Ein eingängiger, fröhlicher kleiner Ohrwurm für den Bäromat
+      const songNotes = [
+        { freq: 261.63, duration: 250, text: "Der Bäromat dreht sich im Takt," },
+        { freq: 329.63, duration: 250, text: "der Bäromat dreht sich im Takt!" },
+        { freq: 392.00, duration: 250, text: "Goldbären fliegen durch die Nacht," },
+        { freq: 523.25, duration: 500, text: "weil uns das glücklich macht!" },
+        { freq: 440.00, duration: 250, text: "Schritt für Schritt," },
+        { freq: 392.00, duration: 250, text: "jetzt naschen alle mit!" },
+        { freq: 349.23, duration: 250, text: "Die Spirale rotiert," },
+        { freq: 329.63, duration: 500, text: "bis die Portion einmarschiert!" },
+        { freq: 293.66, duration: 250, text: "Zucker pur," },
+        { freq: 261.63, duration: 750, text: "die süßeste Maschinen-Kultur!" }
+      ];
+
+      // Melodie sequenziell abspielen
+      for (let note of songNotes) {
+        lyricsDisplay.innerText = `"${note.text}"`;
+        playTone(note.freq, note.duration);
+        await sleep(note.duration + 50); // Kleine Pause zwischen Noten
+      }
+
+      lyricsDisplay.innerText = "Genieß deine Gummibärchen! ";
+      
+      setTimeout(() => {
+        statusText.innerText = "Bereit";
+        statusText.style.color = "#2ecc71";
+        dispenseBtn.disabled = false;
+      }, 2000);
+    }
+
+    function playTone(freq, duration) {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'triangle'; // Weicher, spieluhr-artiger Klang
+      osc.frequency.value = freq;
+
+      gain.gain.setValueAtTime(0.6, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + (duration / 1000));
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + (duration / 1000));
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    dispenseBtn.addEventListener('click', playSongAndDispense);
 
     stopBtn.addEventListener('click', async () => {
       if (writer) {
         await writer.write("0");
-        statusText.innerText = "Motor Deaktiviert";
+        statusText.innerText = "Motor Gestoppt / Stromlos";
         statusText.style.color = "#e74c3c";
         dispenseBtn.disabled = false;
+        lyricsDisplay.innerText = "Gestoppt.";
       }
     });
   </script>
