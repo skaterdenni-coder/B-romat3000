@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bäromat3000 - USB Control Panel</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #1a1a24;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .card {
+      background: #262738;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      text-align: center;
+      width: 340px;
+    }
+
+    .logo-img {
+      width: 100%;
+      max-width: 260px;
+      height: auto;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      object-fit: contain;
+    }
+
+    h1 {
+      margin: 0 0 15px 0;
+      font-size: 26px;
+      color: #ffcc00;
+      letter-spacing: 1px;
+    }
+
+    .status {
+      margin: 15px 0;
+      padding: 12px;
+      border-radius: 10px;
+      background: #1a1a24;
+      font-size: 14px;
+      color: #aaa;
+      border: 1px solid #33344a;
+    }
+
+    .status span {
+      font-weight: bold;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-connect {
+      background: #007acc;
+      color: #fff;
+    }
+
+    .btn-connect:hover {
+      background: #005999;
+    }
+
+    .btn-dispense {
+      background: #ffcc00;
+      color: #1a1a24;
+      box-shadow: 0 4px 15px rgba(255, 204, 0, 0.2);
+    }
+
+    .btn-dispense:hover {
+      background: #e6b800;
+    }
+
+    .btn-dispense:disabled {
+      background: #444558;
+      color: #777;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .btn-stop {
+      background: #e74c3c;
+      color: #fff;
+    }
+
+    .btn-stop:hover {
+      background: #c0392b;
+    }
+
+    .btn-stop:disabled {
+      background: #444558;
+      color: #777;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <!-- Logo Einbindung -->
+    <img src="Logo.jpg" alt="Bäromat3000 Logo" class="logo-img">
+    
+    <h1>Bäromat3000</h1>
+    <div class="status">Status: <span id="statusText" style="color: #e74c3c;">Nicht verbunden</span></div>
+
+    <button id="connectBtn" class="btn btn-connect">Arduino verbinden</button>
+    <button id="dispenseBtn" class="btn btn-dispense" disabled> Portion Ausgeben</button>
+    <button id="stopBtn" class="btn btn-stop" disabled>⛔ Motor Stromlos</button>
+  </div>
+
+  <script>
+    let port;
+    let writer;
+
+    const connectBtn = document.getElementById('connectBtn');
+    const dispenseBtn = document.getElementById('dispenseBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const statusText = document.getElementById('statusText');
+
+    connectBtn.addEventListener('click', async () => {
+      if ('serial' in navigator) {
+        try {
+          port = await navigator.serial.requestPort();
+          await port.open({ baudRate: 115200 });
+
+          const textEncoder = new TextEncoderStream();
+          const writableStreamClosed = textEncoder.readable.pipeTo(port.writable);
+          writer = textEncoder.writable.getWriter();
+
+          statusText.innerText = "Bereit (USB)";
+          statusText.style.color = "#2ecc71";
+          dispenseBtn.disabled = false;
+          stopBtn.disabled = false;
+          connectBtn.disabled = true;
+          connectBtn.innerText = "Verbunden";
+        } catch (err) {
+          statusText.innerText = "Verbindungsfehler";
+          console.error(err);
+        }
+      } else {
+        alert("Web Serial wird von diesem Browser nicht unterstützt. Bitte benutze Chrome oder Edge.");
+      }
+    });
+
+    dispenseBtn.addEventListener('click', async () => {
+      if (writer) {
+        statusText.innerText = "Gibt aus...";
+        statusText.style.color = "#ffcc00";
+        dispenseBtn.disabled = true;
+
+        await writer.write("1");
+
+        setTimeout(() => {
+          statusText.innerText = "Bereit";
+          statusText.style.color = "#2ecc71";
+          dispenseBtn.disabled = false;
+        }, 15000); 
+      }
+    });
+
+    stopBtn.addEventListener('click', async () => {
+      if (writer) {
+        await writer.write("0");
+        statusText.innerText = "Motor Deaktiviert";
+        statusText.style.color = "#e74c3c";
+        dispenseBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
