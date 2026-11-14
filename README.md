@@ -16,7 +16,7 @@ Gesteuert wird das System über einen **Arduino Uno R4 WiFi** im eigenständigen
 | Komponente | Details |
 | :--- | :--- |
 | **Gehäuse** | Laser-Cut Holzrahmen (Multi-Tier Vending-System) |
-| **Förderkanal** | 3D-gedruckte rotierende Spiralschächte |
+| **Förderkanal** | 3D-gedruckte rotierende Spiralschächte auf Basis von: https://makerworld.com/de/models/2380835-full-size-modular-vending-machine#profileId-2607127  |
 | **Ansteuerung** | NEMA 17 Schrittmotoren via CNC Shield V3 |
 | **Steuerung** | Kabelloses Web-Interface (WLAN / WiFi AP) |
 
