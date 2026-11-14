@@ -1,4 +1,5 @@
-# 🐻🍬 Bäromat3000
+# <img width="500" height="300" alt="Logo" src="https://github.com/user-attachments/assets/28bbf0ab-f6c6-4b2e-a121-9f96686c48d5" />
+ Bäromat3000
 
 ![Release](https://img.shields.io/badge/Hardware-LaserCut%20%26%203D%20Print-orange)
 ![Arduino](https://img.shields.io/badge/Microcontroller-Arduino%20Uno%20R4%20WiFi-00979D?logo=arduino)
@@ -11,7 +12,7 @@ Gesteuert wird das System über einen **Arduino Uno R4 WiFi** im eigenständigen
 
 ---
 
-## 📸 Vorschau & Komponenten
+## Vorschau & Komponenten
 
 | Komponente | Details |
 | :--- | :--- |
@@ -22,7 +23,7 @@ Gesteuert wird das System über einen **Arduino Uno R4 WiFi** im eigenständigen
 
 ---
 
-## 🛠️ Hardware-Architektur
+## Hardware-Architektur
 
 ### 1. Mechanik & Gehäuse
 - **Holz-Chassis:** Präzise gelaserte Holzbauteile für einen stabilen Stand.
@@ -39,7 +40,7 @@ Gesteuert wird das System über einen **Arduino Uno R4 WiFi** im eigenständigen
 
 ---
 
-## 💻 Software & Steuerung
+##  Software & Steuerung
 
 Das Projekt setzt auf eine saubere, modulare 2-Dateien-Struktur in der Arduino IDE:
 
@@ -61,7 +62,7 @@ Das Projekt setzt auf eine saubere, modulare 2-Dateien-Struktur in der Arduino I
 
 ---
 
-## 🚀 Schnellstart & Anleitung
+## Schnellstart & Anleitung
 
 ### 1. Projekt vorbereiten
 1. Installiere die Arduino IDE und füge das Board-Paket für den **Arduino Uno R4** hinzu.
@@ -80,17 +81,26 @@ Das Projekt setzt auf eine saubere, modulare 2-Dateien-Struktur in der Arduino I
 ### 3. Web-Interface aufrufen & Naschen
 1. Öffne den Browser auf deinem Endgerät.
 2. Gib in die Adresszeile folgende IP ein:
-   👉 **`http://192.168.4.1`**
+   **`http://192.168.4.1`**
 3. Die Steuerungsoberfläche lädt direkt vom Arduino:
    * Wähle **Fach 1 bis 4** aus.
    * Klicke auf den Ausgabebutton – die Spirale rotiert, während im Browser die Bärchen-Hymne erklingt!
    * Über den roten **Not-Aus**-Button wird das System sofort stromlos geschaltet. (Naja sollte es zumindest)
 
 ---
+<img width="450" height="500" alt="WhatsApp Image 2026-11-08 at 01 10 24" src="https://github.com/user-attachments/assets/fda62579-d3c7-43db-a6f5-b47e4b0cb9f8" />
+<img width="500" height="400" alt="WhatsApp Image 2026-11-08 at 01 10 24 (2)" src="https://github.com/user-attachments/assets/38a9c6f7-c460-4ae4-881c-857c7f0b41da" />
+<img width="500" height="500" alt="WhatsApp Image 2026-11-08 at 01 10 24 (1)" src="https://github.com/user-attachments/assets/afd3ee1c-1089-4685-a78b-dff3d20f6cdd" />
+<img width="500" height="500" alt="WhatsApp Image 2026-11-08 at 01 10 23" src="https://github.com/user-attachments/assets/f70a457c-09bc-4927-a755-63d489b47832" />
+<img width="500" height="500" alt="WhatsApp Image 2026-11-08 at 01 10 23 (1)" src="https://github.com/user-attachments/assets/00bc2656-4690-4c58-bddd-1f84c58d2aa3" />
+
+
 
 ## 📂 Repository-Struktur
-
 ```text
 📂 WifiBaer_4Motor/
  ┣ 📜 WifiBaer_4Motor.ino   # Arduino Firmware (AP, Webserver & Stepper-Logik)
  ┗ 📜 index.h               # HTML/JS Frontend (UI, Vektor-Logo & Web Audio API)
+
+''''
+
